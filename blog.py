@@ -119,6 +119,8 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now = True)
+    user_id = db.StringProperty(required = True)
+    username = db.StringProperty(required = True)
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
@@ -143,6 +145,32 @@ class PostPage(BlogHandler):
         self.render("permalink.html", post = post)
 
 class NewPost(BlogHandler):
+    ''' This is the new post page that handles new submissions '''
+    def get(self):
+        if self.user:
+            self.render("newpost.html")
+        else:
+            self.redirect("/login")
+
+    def post(self):
+        if not self.user:
+            self.redirect('/blog')
+
+        subject = self.request.get('subject')
+        content = self.request.get('content')
+
+        cookie_user_id = self.request.cookies.get('user_id').split('|')[0]
+        username = User.by_id(long(cookie_user_id)).name
+
+        if subject and content:
+            p = Post(parent = blog_key(), subject = subject, content = content, user_id = cookie_user_id, username = username)
+            p.put()
+            self.redirect('/blog/%s' % str(p.key().id()))
+        else:
+            error = "subject and content, please!"
+            self.render("newpost.html", subject=subject, content=content, error=error)
+
+class EditPost(BlogHandler):
     ''' This is the new post page that handles new submissions '''
     def get(self):
         if self.user:

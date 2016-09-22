@@ -3,12 +3,13 @@
     <div class="post-title">
       {{p.subject}}
     </div>
-
+    Posted by: {{p.username}}
     <div class="post-date">
-      {{p.created.strftime("%b %d, %Y")}}
+     Post ID: {{p.key().id()}}
+     |
+     {{p.created.strftime("%b %d, %Y")}}
     </div>
   </div>
-
   <div class="post-content">
     {{p._render_text | safe}}
   </div>
