@@ -78,6 +78,9 @@ def valid_pw(name, password, h):
 def users_key(group = 'default'):
     return db.Key.from_path('users', group)
 
+def posts_key(group = 'default'):
+    return db.Key.from_path('posts', group)
+
 class User(db.Model):
     ''' This defines users for storage in the db '''
     name = db.StringProperty(required = True)
@@ -170,11 +173,34 @@ class NewPost(BlogHandler):
             error = "subject and content, please!"
             self.render("newpost.html", subject=subject, content=content, error=error)
 
-class EditPost(BlogHandler):
+class Lookup(BlogHandler):
     ''' This is the new post page that handles new submissions '''
     def get(self):
         if self.user:
-            self.render("newpost.html")
+            self.render("lookup.html")
+        else:
+            self.redirect("/login")
+
+    def post(self):
+        if not self.user:
+            self.redirect('/blog')
+
+        post_id = long(self.request.get('post_id'))
+        print(post_id)
+
+        if Post.get_by_id(post_id):
+            post_exists = True
+            self.redirect('/blog/lookup/edit/%s' % post_id)
+        else:
+            post_exists = False
+            error = "subject and content, please!"
+            self.render("lookup.html", post_id = post_id)
+
+class EditPost(BlogHandler):
+    ''' This is the new post page that handles new submissions '''
+    def get(self, post_id):
+        if self.user:
+            self.render("editpost.html", post_id = post_id)
         else:
             self.redirect("/login")
 
@@ -303,11 +329,13 @@ class Welcome(BlogHandler):
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/welcome', Welcome),
-                               ('/blog/?', BlogFront),
+                               ('/blog', BlogFront),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),
                                ('/signup', Register),
                                ('/login', Login),
                                ('/logout', Logout),
+                               ('/blog/lookup', Lookup),
+                               ('/blog/lookup/edit/([0-9]+)', EditPost)
                                ],
                               debug=True)

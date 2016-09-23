@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <hr>
+  <h2>post lookup</h2>
+    <form method="post">
+      <label>
+        <div>post id</div>
+        <input type="text" name="post_id" value="{{post_id}}">
+      </label>
+      <div class="error">{{error}}</div>
+      <br>
+      <input type="submit" value="Lookup">
+    </form>
+{% endblock %}
