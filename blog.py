@@ -78,8 +78,7 @@ def valid_pw(name, password, h):
 def users_key(group = 'default'):
     return db.Key.from_path('users', group)
 
-def posts_key(group = 'default'):
-    return db.Key.from_path('posts', group)
+##### end of Cryptofunctions
 
 class User(db.Model):
     ''' This defines users for storage in the db '''
@@ -124,6 +123,7 @@ class Post(db.Model):
     last_modified = db.DateTimeProperty(auto_now = True)
     user_id = db.StringProperty(required = True)
     username = db.StringProperty(required = True)
+    post_id = db.StringProperty(required = False)
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
@@ -167,7 +167,12 @@ class NewPost(BlogHandler):
 
         if subject and content:
             p = Post(parent = blog_key(), subject = subject, content = content, user_id = cookie_user_id, username = username)
-            p.put()
+
+            p_key = p.put()
+            p_returned = db.get(p_key)
+            p_returned.post_id = str(p_key.id())
+            p_returned.put()
+
             self.redirect('/blog/%s' % str(p.key().id()))
         else:
             error = "subject and content, please!"
@@ -185,19 +190,23 @@ class Lookup(BlogHandler):
         if not self.user:
             self.redirect('/blog')
 
-        post_id = long(self.request.get('post_id'))
-        print(post_id)
+        this_post_id = self.request.get('post_id')
 
-        if Post.get_by_id(post_id):
-            post_exists = True
-            self.redirect('/blog/lookup/edit/%s' % post_id)
+        if self.request.get('post_id').isdigit():
+            this_post_id = long(this_post_id)
+            post_exists = db.GqlQuery("SELECT * FROM Post WHERE post_id = :post_id", post_id = this_post_id)
+
+            if post_exists:
+                self.redirect('/blog/lookup/edit/%s' % this_post_id)
+            else:
+                error = "Post not found"
+                self.render("lookup.html", post_id = this_post_id, error = error)
         else:
-            post_exists = False
-            error = "subject and content, please!"
-            self.render("lookup.html", post_id = post_id)
+            error = "Please enter a valid post id"
+            self.render("lookup.html", post_id = this_post_id, error = error)
 
 class EditPost(BlogHandler):
-    ''' This is the new post page that handles new submissions '''
+    ''' This is the edit post page that handles edits and deletions '''
     def get(self, post_id):
         if self.user:
             self.render("editpost.html", post_id = post_id)
