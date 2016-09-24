@@ -179,7 +179,7 @@ class NewPost(BlogHandler):
             self.render("newpost.html", subject=subject, content=content, error=error)
 
 class Lookup(BlogHandler):
-    ''' This is the new post page that handles new submissions '''
+    ''' This is the lookup page that checks if a post_id is valid '''
     def get(self):
         if self.user:
             self.render("lookup.html")
@@ -193,16 +193,17 @@ class Lookup(BlogHandler):
         this_post_id = self.request.get('post_id')
 
         if self.request.get('post_id').isdigit():
-            this_post_id = long(this_post_id)
-            post_exists = db.GqlQuery("SELECT * FROM Post WHERE post_id = :post_id", post_id = this_post_id)
-
-            if post_exists:
-                self.redirect('/blog/lookup/edit/%s' % this_post_id)
+            # search for the post by the passed in post_id
+            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=this_post_id)
+            looked_up_post = gql_lookup.get()
+            # if a post was found, post_id is valid
+            if looked_up_post:
+                self.redirect('/blog/edit/%s' % this_post_id)
             else:
-                error = "Post not found"
+                error = "post not found"
                 self.render("lookup.html", post_id = this_post_id, error = error)
         else:
-            error = "Please enter a valid post id"
+            error = "invalid format (numbers only)"
             self.render("lookup.html", post_id = this_post_id, error = error)
 
 class EditPost(BlogHandler):
@@ -345,6 +346,6 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/login', Login),
                                ('/logout', Logout),
                                ('/blog/lookup', Lookup),
-                               ('/blog/lookup/edit/([0-9]+)', EditPost)
+                               ('/blog/edit/([0-9]+)', EditPost)
                                ],
                               debug=True)
