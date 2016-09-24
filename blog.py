@@ -124,6 +124,7 @@ class Post(db.Model):
     user_id = db.StringProperty(required = True)
     username = db.StringProperty(required = True)
     post_id = db.StringProperty(required = False)
+    post_key = db.StringProperty(required = False)
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
@@ -171,6 +172,7 @@ class NewPost(BlogHandler):
             p_key = p.put()
             p_returned = db.get(p_key)
             p_returned.post_id = str(p_key.id())
+            p_returned.post_key = str(p_key)
             p_returned.put()
 
             self.redirect('/blog/%s' % str(p.key().id()))
