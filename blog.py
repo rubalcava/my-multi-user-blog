@@ -61,7 +61,7 @@ class BlogHandler(webapp2.RequestHandler):
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.by_id(int(uid))
 
-##### Cryptofunctions
+# cryptofunctions
 def make_salt(length = 5):
     return ''.join(random.choice(letters) for x in xrange(length))
 
@@ -78,7 +78,7 @@ def valid_pw(name, password, h):
 def users_key(group = 'default'):
     return db.Key.from_path('users', group)
 
-##### end of Cryptofunctions
+# end of cryptofunctions
 
 class User(db.Model):
     ''' This defines users for storage in the db '''
@@ -110,10 +110,10 @@ class User(db.Model):
             return u
 
 
-##### Blog function
-
+# blog function
 def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
+# end of blog function
 
 class Post(db.Model):
     ''' This is how posts are defined for storage in the db '''
@@ -232,7 +232,7 @@ class EditPost(BlogHandler):
         if not self.user:
             self.redirect('/blog')
 
-        # look up post to verify if logged in user is author
+        # look up post to verify if user is author
         gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
         looked_up_post = gql_lookup.get()
         current_user_id = str(self.user.key().id())
@@ -265,7 +265,7 @@ class Deleted(BlogHandler):
 
 class LikePost(BlogHandler):
     def get(self, post_id):
-        # look up post to verify if logged in user is author
+        # look up post to verify if user is author
         gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
         looked_up_post = gql_lookup.get()
         current_user_id = str(self.user.key().id())
@@ -280,8 +280,7 @@ class LikePost(BlogHandler):
             error = "can't like your own posts"
             self.render("permalink.html", post = looked_up_post, error = error)
 
-# Form validation functions
-
+# form validation functions
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_username(username):
     return username and USER_RE.match(username)
@@ -293,6 +292,7 @@ def valid_password(password):
 EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
+# end of form validation functions
 
 class Signup(BlogHandler):
     ''' This is how users sign up '''
@@ -336,7 +336,7 @@ class Register(Signup):
     ''' This is how a new user is added to the db '''
 
     def done(self):
-        # Override Signup class's done function to ensure user doesn't already exist
+        # override Signup class's done function to ensure user doesn't already exist
         u = User.by_name(self.username)
         if u:
             msg = 'That user already exists.'
@@ -372,10 +372,12 @@ class Logout(BlogHandler):
         self.redirect('/signup')
 
 class MainPage(BlogHandler):
+    ''' This routes to main blog page '''
     def get(self):
         self.redirect('/blog')
 
 class Welcome(BlogHandler):
+    ''' This renders a welcome page when new users sign up '''
     def get(self):
         cookie_user_id = None
         if self.request.cookies.get('user_id'):
