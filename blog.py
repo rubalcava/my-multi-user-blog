@@ -268,11 +268,17 @@ class LikePost(BlogHandler):
         # look up post to verify if logged in user is author
         gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
         looked_up_post = gql_lookup.get()
+        current_user_id = str(self.user.key().id())
+        author_user_id = str(looked_up_post.user_id)
 
-        current_likes = looked_up_post.likes
-        looked_up_post.likes = current_likes + 1
-        looked_up_post.put()
-        self.redirect('/blog/%s' % post_id)
+        if current_user_id != author_user_id:
+            current_likes = looked_up_post.likes
+            looked_up_post.likes = current_likes + 1
+            looked_up_post.put()
+            self.render("permalink.html", post = looked_up_post)
+        else:
+            error = "can't like your own posts"
+            self.render("permalink.html", post = looked_up_post, error = error)
 
 # Form validation functions
 
