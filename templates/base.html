@@ -13,9 +13,7 @@
 
   <div class="login-area">
     {% if user %}
-      <a class='login-link' href='/blog/newpost'>new</a>
-      |
-      <a class='login-link' href='/blog/lookup'>edit</a>
+      <a class='login-link' href='/blog/newpost'>new post</a>
       |
       {{user.name}} (<a class="login-link" href="/logout">logout</a>)
     {% else %}

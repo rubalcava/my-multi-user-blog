@@ -180,33 +180,37 @@ class NewPost(BlogHandler):
             error = "subject and content, please!"
             self.render("newpost.html", subject=subject, content=content, error=error)
 
-class Lookup(BlogHandler):
-    ''' This is the lookup page that checks if a post_id is valid '''
-    def get(self):
-        if self.user:
-            self.render("lookup.html")
-        else:
-            self.redirect("/login")
-
-    def post(self):
-        if not self.user:
-            self.redirect('/blog')
-
-        this_post_id = self.request.get('post_id')
-
-        if self.request.get('post_id').isdigit():
-            # search for the post by the passed in post_id
-            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=this_post_id)
-            looked_up_post = gql_lookup.get()
-            # if a post was found, post_id is valid
-            if looked_up_post:
-                self.redirect('/blog/edit/%s' % this_post_id)
-            else:
-                error = "post not found"
-                self.render("lookup.html", post_id = this_post_id, error = error)
-        else:
-            error = "invalid format (numbers only)"
-            self.render("lookup.html", post_id = this_post_id, error = error)
+# no longer used. replaced by edit post link which goes straight to editing.
+#
+# class Lookup(BlogHandler):
+#     ''' This is the lookup page that checks if a post_id is valid '''
+#     def get(self):
+#         if self.user:
+#             self.render("lookup.html")
+#         else:
+#             self.redirect("/login")
+#
+#     def post(self):
+#         if not self.user:
+#             self.redirect('/blog')
+#
+#         this_post_id = self.request.get('post_id')
+#
+#         if self.request.get('post_id').isdigit():
+#             # search for the post by the passed in post_id
+#             gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=this_post_id)
+#             looked_up_post = gql_lookup.get()
+#             # if a post was found, post_id is valid
+#             if looked_up_post:
+#                 self.redirect('/blog/edit/%s' % this_post_id)
+#             else:
+#                 error = "post not found"
+#                 self.render("lookup.html", post_id = this_post_id, error = error)
+#         else:
+#             error = "invalid format (numbers only)"
+#             self.render("lookup.html", post_id = this_post_id, error = error)
+#
+# end of lookup class
 
 class EditPost(BlogHandler):
     ''' This is the edit post page that handles edits and deletions '''
@@ -374,7 +378,7 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/signup', Register),
                                ('/login', Login),
                                ('/logout', Logout),
-                               ('/blog/lookup', Lookup),
+                               # ('/blog/lookup', Lookup),
                                ('/blog/edit/([0-9]+)', EditPost),
                                ('/blog/deleted', Deleted)
                                ],
