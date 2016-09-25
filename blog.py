@@ -227,23 +227,29 @@ class EditPost(BlogHandler):
         if not self.user:
             self.redirect('/blog')
 
+        # look up post to verify if logged in user is author
+        gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+        looked_up_post = gql_lookup.get()
+        current_user_id = str(self.user.key().id())
+        author_user_id = str(looked_up_post.user_id)
+
         subject = self.request.get('subject')
         content = self.request.get('content')
         delete_checked = self.request.get('delete-checkbox')
 
-        if delete_checked:
-            # look up post then delete it
-            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
-            looked_up_post = gql_lookup.get()
-
-            db.delete(looked_up_post.key())
-            self.redirect('/blog/deleted')
-        if not delete_checked:
-            if subject and content:
-                self.redirect('/blog/%s' % post_id)
-            else:
-                error = "subject and content, please!"
-                self.render("editpost.html", post_id = post_id, subject=subject, content=content, error=error)
+        if current_user_id == author_user_id:
+            if delete_checked:
+                db.delete(looked_up_post.key())
+                self.redirect('/blog/deleted')
+            if not delete_checked:
+                if subject and content:
+                    self.redirect('/blog/%s' % post_id)
+                else:
+                    error = "subject and content, please!"
+                    self.render("editpost.html", post_id = post_id, subject=subject, content=content, error=error)
+        else:
+            error = "don't mess with someone else's post!"
+            self.render("editpost.html", post_id = post_id, subject=subject, content=content, error=error)
 
 class Deleted(BlogHandler):
     def get(self):
