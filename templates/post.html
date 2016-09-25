@@ -5,9 +5,11 @@
     </div>
     Posted by: {{p.username}}
     <div class="post-date">
-     <a class="not-underlined-link" href="/blog/edit/{{p.key().id()}}">edit post</a>
+     <a class="not-underlined-link" href="/blog/like/{{p.key().id()}}">like post</a>
      |
-     post id: {{p.key().id()}}
+     likes: {{p.likes}}
+     |
+     <a class="not-underlined-link" href="/blog/edit/{{p.key().id()}}">edit post</a>
      |
      {{p.created.strftime("%b %d, %Y")}}
     </div>

@@ -125,6 +125,7 @@ class Post(db.Model):
     username = db.StringProperty(required = True)
     post_id = db.StringProperty(required = False)
     post_key = db.StringProperty(required = False)
+    likes = db.IntegerProperty(required = True)
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
@@ -167,7 +168,7 @@ class NewPost(BlogHandler):
         username = User.by_id(long(cookie_user_id)).name
 
         if subject and content:
-            p = Post(parent = blog_key(), subject = subject, content = content, user_id = cookie_user_id, username = username)
+            p = Post(parent = blog_key(), subject = subject, content = content, user_id = cookie_user_id, username = username, likes = 0)
 
             p_key = p.put()
             p_returned = db.get(p_key)
@@ -180,7 +181,7 @@ class NewPost(BlogHandler):
             error = "subject and content, please!"
             self.render("newpost.html", subject=subject, content=content, error=error)
 
-# no longer used. replaced by edit post link which goes straight to editing.
+# class no longer used. replaced by edit post link which goes straight to intended post.
 #
 # class Lookup(BlogHandler):
 #     ''' This is the lookup page that checks if a post_id is valid '''
@@ -261,6 +262,17 @@ class EditPost(BlogHandler):
 class Deleted(BlogHandler):
     def get(self):
         self.render("deleted.html")
+
+class LikePost(BlogHandler):
+    def get(self, post_id):
+        # look up post to verify if logged in user is author
+        gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+        looked_up_post = gql_lookup.get()
+
+        current_likes = looked_up_post.likes
+        looked_up_post.likes = current_likes + 1
+        looked_up_post.put()
+        self.redirect('/blog/%s' % post_id)
 
 # Form validation functions
 
@@ -380,6 +392,7 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/logout', Logout),
                                # ('/blog/lookup', Lookup),
                                ('/blog/edit/([0-9]+)', EditPost),
-                               ('/blog/deleted', Deleted)
+                               ('/blog/deleted', Deleted),
+                               ('/blog/like/([0-9]+)', LikePost)
                                ],
                               debug=True)
