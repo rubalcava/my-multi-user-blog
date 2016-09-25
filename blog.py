@@ -243,6 +243,9 @@ class EditPost(BlogHandler):
                 self.redirect('/blog/deleted')
             if not delete_checked:
                 if subject and content:
+                    looked_up_post.subject = subject
+                    looked_up_post.content = content
+                    looked_up_post.put()
                     self.redirect('/blog/%s' % post_id)
                 else:
                     error = "subject and content, please!"
