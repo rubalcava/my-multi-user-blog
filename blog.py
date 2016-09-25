@@ -212,24 +212,42 @@ class EditPost(BlogHandler):
     ''' This is the edit post page that handles edits and deletions '''
     def get(self, post_id):
         if self.user:
-            self.render("editpost.html", post_id = post_id)
+            # look up the post by id and get its stuff to populate form
+            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+            looked_up_post = gql_lookup.get()
+
+            subject = looked_up_post.subject
+            content = looked_up_post.content
+
+            self.render("editpost.html", post_id = post_id, subject = subject, content = content)
         else:
             self.redirect("/login")
 
-    def post(self):
+    def post(self, post_id):
         if not self.user:
             self.redirect('/blog')
 
         subject = self.request.get('subject')
         content = self.request.get('content')
+        delete_checked = self.request.get('delete-checkbox')
 
-        if subject and content:
-            p = Post(parent = blog_key(), subject = subject, content = content)
-            p.put()
-            self.redirect('/blog/%s' % str(p.key().id()))
-        else:
-            error = "subject and content, please!"
-            self.render("newpost.html", subject=subject, content=content, error=error)
+        if delete_checked:
+            # look up post then delete it
+            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+            looked_up_post = gql_lookup.get()
+
+            db.delete(looked_up_post.key())
+            self.redirect('/blog/deleted')
+        if not delete_checked:
+            if subject and content:
+                self.redirect('/blog/%s' % post_id)
+            else:
+                error = "subject and content, please!"
+                self.render("editpost.html", post_id = post_id, subject=subject, content=content, error=error)
+
+class Deleted(BlogHandler):
+    def get(self):
+        self.render("deleted.html")
 
 # Form validation functions
 
@@ -348,6 +366,7 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/login', Login),
                                ('/logout', Logout),
                                ('/blog/lookup', Lookup),
-                               ('/blog/edit/([0-9]+)', EditPost)
+                               ('/blog/edit/([0-9]+)', EditPost),
+                               ('/blog/deleted', Deleted)
                                ],
                               debug=True)
