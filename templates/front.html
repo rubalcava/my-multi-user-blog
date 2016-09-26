@@ -9,10 +9,12 @@
     <br>
     <br>
     {% for c in comments %}
-      {{c.render() | safe}}
-      <br>
-      <br>
-      <br>
+      {% if c.post_id == p.post_id %}
+          {{c.render() | safe}}
+          <br>
+          <br>
+          <br>
+      {% endif %}
     {% endfor %}
   {% endfor %}
 
