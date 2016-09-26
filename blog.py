@@ -85,6 +85,7 @@ class User(db.Model):
     name = db.StringProperty(required = True)
     pw_hash = db.StringProperty(required = True)
     email = db.StringProperty()
+    liked_posts = db.StringListProperty()
 
     @classmethod
     def by_id(cls, uid):
@@ -266,19 +267,32 @@ class Deleted(BlogHandler):
 
 class LikePost(BlogHandler):
     def get(self, post_id):
-        # look up post to verify if user is author
+        # look up post to verify if current user is author
         gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
         looked_up_post = gql_lookup.get()
         current_user_id = str(self.user.key().id())
         author_user_id = str(looked_up_post.user_id)
 
-        if current_user_id != author_user_id:
-            current_likes = looked_up_post.likes
-            looked_up_post.likes = current_likes + 1
-            looked_up_post.put()
-            self.render("permalink.html", post = looked_up_post)
+        already_liked = False
+
+        # get list of current user's liked posts and check if user has already liked this one
+        liked_posts = self.user.liked_posts
+        if post_id in liked_posts:
+            already_liked = True
+
+        if already_liked == False:
+            if current_user_id != author_user_id:
+                current_likes = looked_up_post.likes
+                looked_up_post.likes = current_likes + 1
+                looked_up_post.put()
+                self.user.liked_posts.append(post_id)
+                self.user.put()
+                self.render("permalink.html", post = looked_up_post)
+            else:
+                error = "can't like your own posts"
+                self.render("permalink.html", post = looked_up_post, error = error)
         else:
-            error = "can't like your own posts"
+            error = "you already liked this post"
             self.render("permalink.html", post = looked_up_post, error = error)
 
 # form validation functions
