@@ -7,6 +7,13 @@
     {{ p.render() | safe }}
     <br>
     <br>
+    <br>
+    {% for c in comments %}
+      {{c.render() | safe}}
+      <br>
+      <br>
+      <br>
+    {% endfor %}
   {% endfor %}
 
 {% endblock %}

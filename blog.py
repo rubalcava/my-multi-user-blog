@@ -140,7 +140,8 @@ class BlogFront(BlogHandler):
     ''' This is how posts are grabbed from the db and rendered on screen '''
     def get(self):
         posts = greetings = Post.all().order('-created')
-        self.render('front.html', posts = posts)
+        comments = Comment.all().order('-created')
+        self.render('front.html', posts = posts, comments = comments)
 
 class PostPage(BlogHandler):
     ''' This is how permalink pages for individual posts are rendered '''
@@ -290,7 +291,7 @@ class NewComment(BlogHandler):
             # look up the post by id and get its stuff to populate form
             gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
             looked_up_post = gql_lookup.get()
-            
+
             self.render('newcomment.html', p = looked_up_post)
         else:
             self.redirect('/login')
