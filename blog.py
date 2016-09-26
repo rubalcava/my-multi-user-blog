@@ -153,7 +153,9 @@ class PostPage(BlogHandler):
             self.error(404)
             return
 
-        self.render("permalink.html", post = post)
+        comments = Comment.all().order('-created')
+
+        self.render("permalink.html", post = post, comments = comments)
 
 class NewPost(BlogHandler):
     ''' This is the new post page that handles new submissions '''
@@ -333,6 +335,8 @@ class LikePost(BlogHandler):
 
         already_liked = False
 
+        comments = Comment.all().order('-created')
+
         # get list of current user's liked posts and check if user has already liked this one
         liked_posts = self.user.liked_posts
         if post_id in liked_posts:
@@ -348,10 +352,10 @@ class LikePost(BlogHandler):
                 self.render("permalink.html", post = looked_up_post)
             else:
                 error = "can't like your own posts"
-                self.render("permalink.html", post = looked_up_post, error = error)
+                self.render("permalink.html", post = looked_up_post, error = error, comments = comments)
         else:
             error = "you already liked this post"
-            self.render("permalink.html", post = looked_up_post, error = error)
+            self.render("permalink.html", post = looked_up_post, error = error, comments = comments)
 
 # form validation functions
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
