@@ -321,7 +321,7 @@ class NewComment(BlogHandler):
 
 class EditComment(BlogHandler):
     def get(self, post_id):
-        self.render("editcomment.html")
+        self.write('get ready to edit %s' % post_id)
 
 class LikePost(BlogHandler):
     def get(self, post_id):
@@ -475,6 +475,7 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/blog/edit/([0-9]+)', EditPost),
                                ('/blog/deleted', Deleted),
                                ('/blog/like/([0-9]+)', LikePost),
-                               ('/blog/comment/add/([0-9]+)', NewComment)
+                               ('/blog/comment/add/([0-9]+)', NewComment),
+                               ('/blog/comment/edit/([0-9]+)', EditComment)
                                ],
                               debug=True)
