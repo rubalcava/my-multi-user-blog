@@ -286,21 +286,19 @@ class Comment(db.Model):
 
 class NewComment(BlogHandler):
     def get(self, post_id):
-        # look up the post by id and get its stuff to populate form
-        gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
-        looked_up_post = gql_lookup.get()
-
-        self.render('newcomment.html', p = looked_up_post)
+        if self.user:
+            # look up the post by id and get its stuff to populate form
+            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+            looked_up_post = gql_lookup.get()
+            
+            self.render('newcomment.html', p = looked_up_post)
+        else:
+            self.redirect('/login')
 
     def post(self, post_id):
-        if not self.user:
-            self.redirect('/blog')
-
         content = self.request.get('content')
-
         author_id = self.request.cookies.get('user_id').split('|')[0]
         author_name = User.by_id(long(author_id)).name
-
 
         if content:
             c = Comment(parent = comment_key(), author_name = author_name, author_id = author_id, post_id = post_id, content = content)
@@ -313,8 +311,11 @@ class NewComment(BlogHandler):
 
             self.redirect('/blog/%s' % str(post_id))
         else:
-            error = "subject and content, please!"
-            self.render("newpost.html", subject=subject, content=content, error=error)
+            error = "comment can't be empty!"
+            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+            looked_up_post = gql_lookup.get()
+
+            self.render("newcomment.html", content=content, p = looked_up_post, error=error)
 
 
 class EditComment(BlogHandler):
