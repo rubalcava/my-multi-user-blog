@@ -223,8 +223,9 @@ class EditPost(BlogHandler):
 
             subject = looked_up_post.subject
             content = looked_up_post.content
+            post_link = "/blog/" + post_id
 
-            self.render("editpost.html", post_id = post_id, subject = subject, content = content)
+            self.render("editpost.html", post_id = post_id, subject = subject, content = content, post_link = post_link)
         else:
             self.redirect("/login")
 
