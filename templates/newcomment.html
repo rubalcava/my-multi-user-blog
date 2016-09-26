@@ -23,7 +23,14 @@
     <br>
     {% for c in comments %}
       {% if c.post_id == p.post_id %}
-          {{c.render() | safe}}
+      <div class="comment">
+        <div class="comment-heading">
+          <div class="post-date">posted by: {{c.author_name}}</div>
+        </div>
+        <div class="post-content">
+          {{c.content | safe}}
+        </div>
+      </div>
           <br>
           <br>
           <br>
