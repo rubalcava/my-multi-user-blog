@@ -110,8 +110,12 @@ class User(db.Model):
         if u and valid_pw(name, pw, u.pw_hash):
             return u
 
+# comment class function
+def comment_key(name = 'default'):
+    return db.Key.from_path('comments', name)
+# end of comment function
 
-# blog function
+# blog class function
 def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 # end of blog function
@@ -265,6 +269,58 @@ class Deleted(BlogHandler):
     def get(self):
         self.render("deleted.html")
 
+class Comment(db.Model):
+    ''' This is how comments are defined for storage in the db '''
+    author_name = db.StringProperty(required = True)
+    author_id = db.StringProperty(required = True)
+    post_id = db.StringProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+    last_modified = db.DateTimeProperty(auto_now = True)
+    content = db.TextProperty(required = True)
+    comment_id = db.StringProperty(required = False)
+    comment_key = db.StringProperty(required = False)
+
+    def render(self):
+        self._render_text = self.content.replace('\n', '<br>')
+        return render_str("comment.html", c = self)
+
+class NewComment(BlogHandler):
+    def get(self, post_id):
+        # look up the post by id and get its stuff to populate form
+        gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+        looked_up_post = gql_lookup.get()
+
+        self.render('newcomment.html', p = looked_up_post)
+
+    def post(self, post_id):
+        if not self.user:
+            self.redirect('/blog')
+
+        content = self.request.get('content')
+
+        author_id = self.request.cookies.get('user_id').split('|')[0]
+        author_name = User.by_id(long(author_id)).name
+
+
+        if content:
+            c = Comment(parent = comment_key(), author_name = author_name, author_id = author_id, post_id = post_id, content = content)
+
+            c_key = c.put()
+            c_returned = db.get(c_key)
+            c_returned.comment_id = str(c_key.id())
+            c_returned.comment_key = str(c_key)
+            c_returned.put()
+
+            self.redirect('/blog/%s' % str(post_id))
+        else:
+            error = "subject and content, please!"
+            self.render("newpost.html", subject=subject, content=content, error=error)
+
+
+class EditComment(BlogHandler):
+    def get(self, post_id):
+        self.render("editcomment.html")
+
 class LikePost(BlogHandler):
     def get(self, post_id):
         # look up post to verify if current user is author
@@ -416,6 +472,7 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                # ('/blog/lookup', Lookup),
                                ('/blog/edit/([0-9]+)', EditPost),
                                ('/blog/deleted', Deleted),
-                               ('/blog/like/([0-9]+)', LikePost)
+                               ('/blog/like/([0-9]+)', LikePost),
+                               ('/blog/comment/add/([0-9]+)', NewComment)
                                ],
                               debug=True)

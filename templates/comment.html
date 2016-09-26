@@ -1,19 +1,19 @@
 <div class="post">
   <div class="post-heading">
     <div class="post-title">
-      <a class="not-underlined-link" href="/blog/{{p.key().id()}}">{{p.subject}}</a>
+      <a class="not-underlined-link" href="/blog/{{p.key().id()}}">{{c.subject}}</a>
     </div>
-    posted by: {{p.username}}
+    posted by: {{c.username}}
     <div class="post-date">
-     <a class="not-underlined-link" href="/blog/comment/add/{{p.key().id()}}">add comment</a>
+     <a class="not-underlined-link" href="/blog/comment/{{p.key().id()}}">add comment</a>
      |
      <a class="not-underlined-link" href="/blog/like/{{p.key().id()}}">like post</a>
      |
-     likes: {{p.likes}}
+     likes: {{c.likes}}
      |
      <a class="not-underlined-link" href="/blog/edit/{{p.key().id()}}">edit post</a>
      |
-     {{p.created.strftime("%b %d, %Y")}}
+     {{c.created.strftime("%b %d, %Y")}}
     </div>
   </div>
   <div class="post-content">

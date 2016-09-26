@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<hr>
+	<h2>new comment</h2>
+	<div class="post">
+		<div class="post-heading">
+			<div class="post-title">
+				<a class="not-underlined-link" href="/blog/{{p.key().id()}}">{{p.subject}}</a>
+			</div>
+            posted by: {{p.username}}
+			<div class="post-date">
+				likes: {{p.likes}} | {{p.created.strftime("%b %d, %Y")}}
+			</div>
+		</div>
+		<div class="post-content">
+        {{p.content}}
+        </div>
+	</div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+	<form method="post">
+		<label>
+			<div>comment</div>
+			<textarea name="content">{{content}}</textarea>
+		</label>
+		<div class="error">{{error}}</div>
+		<input type="submit">
+	</form>
+{% endblock %}
