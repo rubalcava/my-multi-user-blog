@@ -293,8 +293,9 @@ class NewComment(BlogHandler):
             # look up the post by id and get its stuff to populate form
             gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
             looked_up_post = gql_lookup.get()
+            comments = Comment.all().order('-created')
 
-            self.render('newcomment.html', p = looked_up_post)
+            self.render('newcomment.html', p = looked_up_post, comments = comments)
         else:
             self.redirect('/login')
 
@@ -349,7 +350,7 @@ class LikePost(BlogHandler):
                 looked_up_post.put()
                 self.user.liked_posts.append(post_id)
                 self.user.put()
-                self.render("permalink.html", post = looked_up_post)
+                self.render("permalink.html", post = looked_up_post, comments = comments)
             else:
                 error = "can't like your own posts"
                 self.render("permalink.html", post = looked_up_post, error = error, comments = comments)

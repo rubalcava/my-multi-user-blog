@@ -21,6 +21,14 @@
     <br>
     <br>
     <br>
+    {% for c in comments %}
+      {% if c.post_id == p.post_id %}
+          {{c.render() | safe}}
+          <br>
+          <br>
+          <br>
+      {% endif %}
+    {% endfor %}
     <br>
     <br>
     <br>
