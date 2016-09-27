@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <br>
+    <h2>edit comment</h2>
+    <div class="post">
+    	<div class="post-heading">
+    		<div class="post-title">
+    			<a class="not-underlined-link" href="/blog/{{p.key().id()}}">{{p.subject}}</a>
+    		</div>
+            posted by: {{p.username}}
+    		<div class="post-date">
+    			likes: {{p.likes}} | {{p.created.strftime("%b %d, %Y")}}
+    		</div>
+    	</div>
+    	<div class="post-content">{{p.content}}</div>
+    </div>
+    <br>
+    <br>
+    <br>
+    {% for c in comments %}
+      {% if c.post_id == p.post_id %}
+      <div class="comment">
+        <div class="comment-heading">
+          <div class="post-date">posted by: {{c.author_name}}</div>
+        </div>
+        <div class="post-content">
+          {{c.content | safe}}
+        </div>
+      </div>
+          <br>
+          <br>
+          <br>
+      {% endif %}
+    {% endfor %}
+    <br>
+    <br>
+    <br>
+    <br>
+    <form method="post">
+        <label>delete comment
+          <input type="checkbox" name="delete-checkbox">
+        </label>
+    	<label>
+    		<div>comment</div>
+    		<textarea name="content">{{content}}</textarea>
+    	</label>
+    	<div class="error">{{error}}</div>
+    	<input type="submit">
+        <button><a class="not-underlined-link" href="/blog/{{p.key().id()}}">Cancel</a></button>
+    </form>
+
+{% endblock %}
