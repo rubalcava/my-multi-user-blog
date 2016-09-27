@@ -342,7 +342,7 @@ class EditComment(BlogHandler):
 
     def post(self, comment_id):
         if not self.user:
-            self.redirect('/blog')
+            self.redirect('/login')
 
         # get all comments in case they need to be used later
         comments = Comment.all().order('-created')
@@ -383,35 +383,38 @@ class EditComment(BlogHandler):
 
 class LikePost(BlogHandler):
     def get(self, post_id):
-        # look up post to verify if current user is author
-        gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
-        looked_up_post = gql_lookup.get()
-        current_user_id = str(self.user.key().id())
-        author_user_id = str(looked_up_post.user_id)
+        if self.user:
+            # look up post to verify if current user is author
+            gql_lookup = Post.gql("WHERE post_id = :post_id", post_id=post_id)
+            looked_up_post = gql_lookup.get()
+            current_user_id = str(self.user.key().id())
+            author_user_id = str(looked_up_post.user_id)
 
-        already_liked = False
+            already_liked = False
 
-        comments = Comment.all().order('-created')
+            comments = Comment.all().order('-created')
 
-        # get list of current user's liked posts and check if user has already liked this one
-        liked_posts = self.user.liked_posts
-        if post_id in liked_posts:
-            already_liked = True
+            # get list of current user's liked posts and check if user has already liked this one
+            liked_posts = self.user.liked_posts
+            if post_id in liked_posts:
+                already_liked = True
 
-        if already_liked == False:
-            if current_user_id != author_user_id:
-                current_likes = looked_up_post.likes
-                looked_up_post.likes = current_likes + 1
-                looked_up_post.put()
-                self.user.liked_posts.append(post_id)
-                self.user.put()
-                self.render("permalink.html", post = looked_up_post, comments = comments)
+            if already_liked == False:
+                if current_user_id != author_user_id:
+                    current_likes = looked_up_post.likes
+                    looked_up_post.likes = current_likes + 1
+                    looked_up_post.put()
+                    self.user.liked_posts.append(post_id)
+                    self.user.put()
+                    self.render("permalink.html", post = looked_up_post, comments = comments)
+                else:
+                    error = "can't like your own posts"
+                    self.render("permalink.html", post = looked_up_post, error = error, comments = comments)
             else:
-                error = "can't like your own posts"
+                error = "you already liked this post"
                 self.render("permalink.html", post = looked_up_post, error = error, comments = comments)
         else:
-            error = "you already liked this post"
-            self.render("permalink.html", post = looked_up_post, error = error, comments = comments)
+            self.redirect("/login")
 
 # form validation functions
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
