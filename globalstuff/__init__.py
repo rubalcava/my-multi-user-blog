@@ -1,0 +1,1 @@
+from globalstuff import myglobals
